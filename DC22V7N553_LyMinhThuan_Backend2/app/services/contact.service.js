@@ -20,7 +20,7 @@ class ContactService {
     const contact = this.extractContactData(payload);
     const result = await this.Contact.findOneAndUpdate(
       contact,
-      { $set: { favorite: contact.favorite === true } },
+      { $set: { favorite: contact.favorite || [] } },
       { returnDocument: "after", upsert: true },
     );
     return result;

@@ -28,13 +28,35 @@
 
             <ErrorMessage name="phone" class="error-feedback" />
         </div>
-        <div class="form-group form-check">
-
-            <input name="favorite" type="checkbox" class="form-check-input" v-model="contactLocal.favorite" />
-
-            <label for="favorite" class="form-check-label">
-                <strong>Liên hệ yêu thích</strong>
-            </label>
+        <div class="form-group">
+            <label><strong>Sở thích:</strong></label>
+            <div class="d-flex flex-wrap gap-3 mt-2">
+                <div class="form-check">
+                    <input name="favorite" type="checkbox" class="form-check-input" value="Âm nhạc"
+                        v-model="contactLocal.favorite" />
+                    <label class="form-check-label">Âm nhạc</label>
+                </div>
+                <div class="form-check">
+                    <input name="favorite" type="checkbox" class="form-check-input" value="Thể thao"
+                        v-model="contactLocal.favorite" />
+                    <label class="form-check-label">Thể thao</label>
+                </div>
+                <div class="form-check">
+                    <input name="favorite" type="checkbox" class="form-check-input" value="Du lịch"
+                        v-model="contactLocal.favorite" />
+                    <label class="form-check-label">Du lịch</label>
+                </div>
+                <div class="form-check">
+                    <input name="favorite" type="checkbox" class="form-check-input" value="Khác"
+                        v-model="contactLocal.favorite" />
+                    <label class="form-check-label">Khác</label>
+                </div>
+            </div>
+            <!-- Ô nhập Sở thích khác -->
+            <div class="mt-2" v-if="contactLocal.favorite.includes('Khác')">
+                <input type="text" class="form-control" placeholder="Nhập sở thích khác của bạn..."
+                    v-model="otherFavoriteText" />
+            </div>
         </div>
         <div class="form-group">
             <button class="btn btn-primary">Lưu</button>
@@ -79,21 +101,51 @@ export default {
                     "Số điện thoại không hợp lệ."
                 ),
         });
-        return {
 
-            contactLocal: { ...this.contact },
+        // Xử lý dữ liệu sở thích ban đầu
+        const knownHobbies = ["Âm nhạc", "Thể thao", "Du lịch", "Khác"];
+        let initialFavorite = Array.isArray(this.contact.favorite) ? [...this.contact.favorite] : [];
+        let defaultOther = "";
+
+        // Nếu có sở thích nằm ngoài danh sách mặc định => Gom vào text input "Khác"
+        const otherHobbiesStr = initialFavorite.find(h => !knownHobbies.includes(h));
+        if (otherHobbiesStr) {
+            defaultOther = otherHobbiesStr;
+            if (!initialFavorite.includes("Khác")) {
+                initialFavorite.push("Khác");
+            }
+            initialFavorite = initialFavorite.filter(h => knownHobbies.includes(h));
+        }
+
+        return {
+            contactLocal: {
+                ...this.contact,
+                favorite: initialFavorite
+            },
+            otherFavoriteText: defaultOther,
             contactFormSchema,
         };
     },
     methods: {
         submitContact() {
-            this.$emit("submit:contact", this.contactLocal);
+            let payload = { ...this.contactLocal };
+            payload.favorite = [...(payload.favorite || [])];
+
+            // Xử lý logic thay thế chữ "Khác" bằng nội dung trong Input
+            if (payload.favorite.includes("Khác")) {
+                payload.favorite = payload.favorite.filter(h => h !== "Khác");
+                if (this.otherFavoriteText && this.otherFavoriteText.trim() !== "") {
+                    payload.favorite.push(this.otherFavoriteText.trim());
+                }
+            }
+
+            this.$emit("submit:contact", payload);
         },
         deleteContact() {
             this.$emit("delete:contact", this.contactLocal._id);
         },
         Cancel() {
-            const reply = window.confirm('You have unsaved changes! Do you want to leave?')
+            const reply = window.confirm('Bạn có các thay đổi chưa được lưu! Bạn có chắc chắn muốn thoát khỏi trang này không?')
 
             if (!reply) {
                 return false

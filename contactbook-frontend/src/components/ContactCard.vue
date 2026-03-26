@@ -24,9 +24,8 @@ export default {
             {{ contact.phone }}
         </div>
         <div class="p-1">
-            <strong>Liên hệ yêu thích:&nbsp;</strong>
-            <i v-if="contact.favorite" class="fa-solid fa-check"></i>
-            <i v-else class="fa-solid fa-xmark"></i>
+            <strong>Sở thích:&nbsp;</strong>
+            <span>{{ Array.isArray(contact.favorite) && contact.favorite.length > 0 ? contact.favorite.join(', ') : 'Không có' }}</span>
         </div>
     </div>
 </template>
