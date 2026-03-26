@@ -19,6 +19,11 @@ class AuthService {
     this._save(res.data);
     return res.data;
   }
+  async googleLogin(idToken) {
+    const res = await this.api.post("/google", { token: idToken });
+    this._save(res.data);
+    return res.data;
+  }
   logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

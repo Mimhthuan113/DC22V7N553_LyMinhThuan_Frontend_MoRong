@@ -69,6 +69,32 @@ class AuthService {
     return { user: { _id: user._id, name: user.name, email: user.email }, token };
   }
 
+  // Đăng nhập Google: verify access_token, tìm/tạo user
+  async googleAuth(accessToken) {
+    const res = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`
+    );
+    if (!res.ok) throw new Error("Google Token không hợp lệ");
+    const ggUser = await res.json();
+    
+    if (!ggUser.email) throw new Error("Không lấy được email từ Google");
+
+    let user = await this.User.findOne({ email: ggUser.email });
+    if (!user) {
+      const result = await this.User.insertOne({
+        name: ggUser.name,
+        email: ggUser.email,
+        password: null,
+        provider: "google",
+        googleId: ggUser.sub,
+        createdAt: new Date(),
+      });
+      user = { _id: result.insertedId, name: ggUser.name, email: ggUser.email };
+    }
+    const token = this.generateToken(user);
+    return { user: { _id: user._id, name: user.name, email: user.email }, token };
+  }
+
   // Tìm user theo id
   async findById(userId) {
     return await this.User.findOne(

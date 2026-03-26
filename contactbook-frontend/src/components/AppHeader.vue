@@ -37,6 +37,9 @@ export default {
     },
     methods: {
         logout() {
+            if (!window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+                return;
+            }
             authService.logout();
             this.user = null;
             this.$router.push({ name: "login" });
